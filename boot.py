@@ -1,6 +1,6 @@
 # This file is executed on every boot (including wake-boot from deepsleep)
 
-print("boot.py")
+print(" *** boot.py")
 
 import time
 print("time:", time.time())

@@ -6,17 +6,18 @@ import time
 import machine
 from machine import Pin
 from odroidgo import buttons
+from odroidgo.crossbar import Crossbar
 from odroidgo.fonts import glcdfont, tt14, tt24, tt32
 from odroidgo.lcd import get_ili9341_lcd
 
 SKIP_NAMES = ("boot", "main", "menu")
 
 
-class Starter:
+class Menu:
     WAIT_TIME = 3
     DEFAULT_DELETE_COUNT = 3
 
-    def __init__(self, lcd, up_pin, down_pin, run_pin, reset_pin, delete_pin):
+    def __init__(self, lcd, reset_pin):
         if lcd is not None:
             self.lcd = lcd
             self.print = lcd.print
@@ -33,22 +34,9 @@ class Starter:
         self.running = False
 
         min_ago = 500
-        up_handler = buttons.Button(
-            pin=Pin(up_pin, mode=Pin.IN, pull=Pin.PULL_UP), callback=self.up_callback, min_ago=min_ago
-        )
-        down_handler = buttons.Button(
-            pin=Pin(down_pin, mode=Pin.IN, pull=Pin.PULL_UP), callback=self.down_callback, min_ago=min_ago
-        )
-
-        run_handler = buttons.Button(
-            pin=Pin(run_pin, mode=Pin.IN, pull=Pin.PULL_UP), callback=self.run_callback, min_ago=min_ago
-        )
 
         reset_handler = buttons.Button(
             pin=Pin(reset_pin, mode=Pin.IN, pull=Pin.PULL_UP), callback=self.reset_callback, min_ago=min_ago
-        )
-        delete_handler = buttons.Button(
-            pin=Pin(delete_pin, mode=Pin.IN, pull=Pin.PULL_UP), callback=self.delete_callback, min_ago=min_ago
         )
 
         self.print_module_name()
@@ -73,21 +61,24 @@ class Starter:
     def print_module_name(self):
         self.print("%i - %r" % (self.pos, self.get_module_name()))
 
-    def up_callback(self, pin):
+    def up(self):
+        # go one filename up
         if self.pos <= 0:
             self.pos = self.max
         else:
             self.pos -= 1
         self.print_module_name()
 
-    def down_callback(self, pin):
+    def down(self):
+        # go one filename down
         if self.pos >= self.max:
             self.pos = 0
         else:
             self.pos += 1
         self.print_module_name()
 
-    def run_callback(self, pin):
+    def right(self):
+        # start current filename
         if time.time() < self.next_call:
             print("Skip, next call %s" % (self.next_call - time.time()))
             return
@@ -101,7 +92,7 @@ class Starter:
         if self.lcd:
             lcd.fill(0x5500ff)
             lcd.reset_scroll()
-            lcd.set_pos(0,0)
+            lcd.set_pos(0, 0)
             lcd.set_font(tt24)
 
         module_name = self.get_module_name()
@@ -123,21 +114,24 @@ class Starter:
             # try to 'reset' everything
             self.print("%r done" % module_name)
             del (module)
-            del(sys.modules[module_name])
-            if lcd:
-                lcd.set_font(tt24)
-            self.running = False
-            self.next_call = time.time() + self.WAIT_TIME
+            del (sys.modules[module_name])
+            
+        if lcd:
+            lcd.set_font(tt24)
+        self.running = False
+        self.next_call = time.time() + self.WAIT_TIME
+        self.print_module_name()
 
     def reset_callback(self, pin):
         if self.lcd:
             lcd.fill(0xff0000)
             lcd.reset_scroll()
-            lcd.set_pos(0,0)
+            lcd.set_pos(0, 0)
         self.print("Reset!")
         machine.reset()
 
-    def delete_callback(self, pin):
+    def left(self):
+        # delete current file
         module_name = self.get_module_name()
         if self.delete_pressed >= 1:
             self.print("Delete %r ? Press again %i times." % (module_name, self.delete_pressed))
@@ -154,6 +148,7 @@ class Starter:
             self.print("Deleted, ok")
             del self.module_names[self.module_names.index(module_name)]
             self.max -= 1
+            self.print_module_name()
 
 
 lcd = get_ili9341_lcd(fill=0x5500ff)
@@ -161,20 +156,15 @@ lcd.set_font(tt14)
 lcd.print("PyOdroidGo by Jens Diemer (GPLv3)")
 lcd.set_font(glcdfont)
 lcd.print(
-    "%s %s on %s (Python v%s)" % (
-        sys.implementation.name,
-        ".".join([str(i) for i in sys.implementation.version]),
-        sys.platform,
-        sys.version
-    )
+    "%s %s on %s (Python v%s)"
+    % (sys.implementation.name, ".".join([str(i) for i in sys.implementation.version]), sys.platform, sys.version)
 )
 lcd.set_font(tt24)
 
-starter = Starter(
-    lcd=lcd,
-    up_pin=buttons.BUTTON_A,
-    down_pin=buttons.BUTTON_B,
-    run_pin=buttons.BUTTON_START,
-    reset_pin=buttons.BUTTON_MENU,
-    delete_pin=buttons.BUTTON_VOLUME,
-)
+menu = Menu(lcd=lcd, reset_pin=buttons.BUTTON_MENU)
+crossbar = Crossbar(handler=menu)
+while True:
+    crossbar.poll()
+    time.sleep(0.1)
+
+print_func("--MENU END--")

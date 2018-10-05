@@ -1,3 +1,3 @@
-print("main.py")
+print(" *** main.py")
 
 import menu
