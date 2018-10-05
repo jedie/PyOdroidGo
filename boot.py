@@ -39,3 +39,8 @@ import gc
 #import webrepl
 #webrepl.start()
 gc.collect()
+
+import micropython
+
+# http://docs.micropython.org/en/latest/library/micropython.html#micropython.alloc_emergency_exception_buf
+micropython.alloc_emergency_exception_buf(100)
