@@ -100,6 +100,9 @@ class Starter:
 
         if self.lcd:
             lcd.fill(0x5500ff)
+            lcd.reset_scroll()
+            lcd.set_pos(0,0)
+            lcd.set_font(tt24)
 
         module_name = self.get_module_name()
         self.print("import %r..." % module_name)
@@ -112,11 +115,15 @@ class Starter:
             sys.print_exception(err, buffer)
             content = buffer.getvalue()
             print(content)
+            if lcd:
+                lcd.set_font(glcdfont)
             for line in content.splitlines():
                 self.print(line)
         finally:
+            # try to 'reset' everything
             self.print("%r done" % module_name)
             del (module)
+            del(sys.modules[module_name])
             if lcd:
                 lcd.set_font(tt24)
             self.running = False
@@ -125,6 +132,8 @@ class Starter:
     def reset_callback(self, pin):
         if self.lcd:
             lcd.fill(0xff0000)
+            lcd.reset_scroll()
+            lcd.set_pos(0,0)
         self.print("Reset!")
         machine.reset()
 
@@ -148,8 +157,18 @@ class Starter:
 
 
 lcd = get_ili9341_lcd(fill=0x5500ff)
+lcd.set_font(tt14)
+lcd.print("PyOdroidGo by Jens Diemer (GPLv3)")
+lcd.set_font(glcdfont)
+lcd.print(
+    "%s %s on %s (Python v%s)" % (
+        sys.implementation.name,
+        ".".join([str(i) for i in sys.implementation.version]),
+        sys.platform,
+        sys.version
+    )
+)
 lcd.set_font(tt24)
-lcd.print("start...")
 
 starter = Starter(
     lcd=lcd,
