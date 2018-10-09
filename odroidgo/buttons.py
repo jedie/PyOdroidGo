@@ -1,3 +1,6 @@
+"""
+    ODROID GO Buttons
+"""
 import time
 
 import micropython
