@@ -86,10 +86,7 @@ class Menu:
         self.running = True
 
         if self.screen:
-            screen.fill(0x5500ff)
-            screen.reset_scroll()
-            screen.set_pos(0, 0)
-            screen.set_font(tt24)
+            screen.reset()
 
         module_name = self.get_module_name()
         self.print("import %r..." % module_name)
