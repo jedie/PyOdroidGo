@@ -4,11 +4,11 @@ import sys
 import time
 
 import machine
+import odroidgo
 from machine import Pin
 from odroidgo import buttons
 from odroidgo.crossbar import Crossbar
-from odroidgo.fonts import glcdfont, tt14, tt24, tt32
-from odroidgo.lcd import get_ili9341_lcd
+from odroidgo.screen import OdroidGoDisplay
 
 SKIP_NAMES = ("boot", "main", "menu")
 
@@ -17,12 +17,12 @@ class Menu:
     WAIT_TIME = 3
     DEFAULT_DELETE_COUNT = 3
 
-    def __init__(self, lcd, reset_pin):
-        if lcd is not None:
-            self.lcd = lcd
-            self.print = lcd.print
+    def __init__(self, screen, reset_pin):
+        if screen is not None:
+            self.screen = screen
+            self.print = screen.print
         else:
-            self.lcd = None
+            self.screen = None
             self.print = print
 
         self.next_call = time.time() + self.WAIT_TIME
@@ -33,11 +33,7 @@ class Menu:
         self.delete_pressed = self.DEFAULT_DELETE_COUNT
         self.running = False
 
-        min_ago = 500
-
-        reset_handler = buttons.Button(
-            pin=Pin(reset_pin, mode=Pin.IN, pull=Pin.PULL_UP), callback=self.reset_callback, min_ago=min_ago
-        )
+        reset_handler = buttons.Button(pin_no=reset_pin, callback=self.reset_callback)
 
         self.print_module_name()
         self.next_call = time.time() + self.WAIT_TIME
@@ -89,25 +85,25 @@ class Menu:
             return
         self.running = True
 
-        if self.lcd:
-            lcd.fill(0x5500ff)
-            lcd.reset_scroll()
-            lcd.set_pos(0, 0)
-            lcd.set_font(tt24)
+        if self.screen:
+            screen.fill(0x5500ff)
+            screen.reset_scroll()
+            screen.set_pos(0, 0)
+            screen.set_font(tt24)
 
         module_name = self.get_module_name()
         self.print("import %r..." % module_name)
         module = __import__(module_name)
         self.print("Start main()...")
         try:
-            module.main(self.lcd, self.print)
+            module.main(self.screen, self.print)
         except Exception as err:
             buffer = io.StringIO()
             sys.print_exception(err, buffer)
             content = buffer.getvalue()
             print(content)
-            if lcd:
-                lcd.set_font(glcdfont)
+            if screen:
+                screen.set_default_font()
             for line in content.splitlines():
                 self.print(line)
         finally:
@@ -115,18 +111,18 @@ class Menu:
             self.print("%r done" % module_name)
             del (module)
             del (sys.modules[module_name])
-            
-        if lcd:
-            lcd.set_font(tt24)
+
+        if screen:
+            screen.set_default_font()
         self.running = False
         self.next_call = time.time() + self.WAIT_TIME
         self.print_module_name()
 
     def reset_callback(self, pin):
-        if self.lcd:
-            lcd.fill(0xff0000)
-            lcd.reset_scroll()
-            lcd.set_pos(0, 0)
+        if self.screen:
+            screen.fill(0xff0000)
+            screen.reset_scroll()
+            screen.set_pos(0, 0)
         self.print("Reset!")
         machine.reset()
 
@@ -151,20 +147,19 @@ class Menu:
             self.print_module_name()
 
 
-lcd = get_ili9341_lcd(fill=0x5500ff)
-lcd.set_font(tt14)
-lcd.print("PyOdroidGo by Jens Diemer (GPLv3)")
-lcd.set_font(glcdfont)
-lcd.print(
+screen = OdroidGoDisplay()
+screen.print("PyOdroidGo by Jens Diemer (GPLv3)")
+screen.print(
     "%s %s on %s (Python v%s)"
     % (sys.implementation.name, ".".join([str(i) for i in sys.implementation.version]), sys.platform, sys.version)
 )
-lcd.set_font(tt24)
 
-menu = Menu(lcd=lcd, reset_pin=buttons.BUTTON_MENU)
-crossbar = Crossbar(handler=menu)
-while True:
-    crossbar.poll()
-    time.sleep(0.1)
-
-print_func("--MENU END--")
+try:
+    menu = Menu(screen=screen, reset_pin=odroidgo.BUTTON_MENU)
+    crossbar = Crossbar(handler=menu)
+    while True:
+        crossbar.poll()
+        time.sleep(0.1)
+finally:
+    screen.deinit()
+    print("--END--")

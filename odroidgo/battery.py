@@ -1,17 +1,17 @@
 """
-    A simple battery module for Micropython, only for ODROID-GO (ESP32).
+    ODROID-GO battery
 
     >>> battery = OdroidGoBattery()
     >>> battery.get_voltage()
     4.868
 
     Created on: 2018. 7. 13 by Joshua Yang (joshua.yang@hardkernel.com)
-    refactored 02.Okt.2018 by Jens Diemer
+    refactored Okt.2018 by Jens Diemer
 """
 
 
+import odroidgo
 from machine import ADC, Pin
-from micropython import const
 
 
 class Battery:
@@ -41,5 +41,8 @@ class Battery:
 class OdroidGoBattery(Battery):
     def __init__(self):
         super().__init__(
-            battery_pin=const(36), battery_resistance_num=const(2), width=ADC.WIDTH_12BIT, atten=ADC.ATTN_11DB
+            battery_pin=odroidgo.BATTERY_PIN,
+            battery_resistance_num=odroidgo.BATTERY_RESISTANCE_NUM,
+            width=ADC.WIDTH_12BIT,
+            atten=ADC.ATTN_11DB,
         )

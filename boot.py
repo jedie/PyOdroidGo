@@ -9,7 +9,7 @@ from machine import Pin
 from micropython import const
 
 from machine import RTC
-print("RTC datetime:", RTC().datetime())
+print("RTC datetime:", RTC().now())
 
 
 def led_pwm():

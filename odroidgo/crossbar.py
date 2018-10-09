@@ -7,14 +7,8 @@
 
 
 from machine import ADC, Pin, Timer
-from micropython import const
 
-BUTTON_JOY_X = const(34)
-BUTTON_JOY_Y = const(35)
-
-MIN_ADC = 10
-MIN_ADC_HIGH = 500
-MIN_ADC_LOW = 200
+import odroidgo
 
 
 class JoystickHandler:
@@ -32,14 +26,14 @@ class JoystickHandler:
 
     def poll(self):
         value = self.adc.read()
-        if value < MIN_ADC:
+        if value < odroidgo.BUTTON_JOY_MIN_ADC:
             # button released
             self.blocked = False
         elif not self.blocked:
-            if value > MIN_ADC_HIGH:
+            if value > odroidgo.BUTTON_JOY_MIN_ADC_HIGH:
                 self.blocked = True
                 self.high_callback()
-            elif value > MIN_ADC_LOW:
+            elif value > odroidgo.BUTTON_JOY_MIN_ADC_LOW:
                 self.blocked = True
                 self.low_callback()
 
@@ -56,8 +50,8 @@ class Crossbar:
     """
 
     def __init__(self, handler):
-        self.joy_x = JoystickHandler(BUTTON_JOY_X, high_callback=handler.left, low_callback=handler.right)
-        self.joy_y = JoystickHandler(BUTTON_JOY_Y, high_callback=handler.up, low_callback=handler.down)
+        self.joy_x = JoystickHandler(odroidgo.BUTTON_JOY_X, high_callback=handler.left, low_callback=handler.right)
+        self.joy_y = JoystickHandler(odroidgo.BUTTON_JOY_Y, high_callback=handler.up, low_callback=handler.down)
 
     def poll(self):
         self.joy_x.poll()

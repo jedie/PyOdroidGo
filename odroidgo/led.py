@@ -1,5 +1,8 @@
-from machine import Pin
-from micropython import const
+"""
+    ODROID GO LEDs
+"""
 
-BLUE_LED = const(2)
-blue_led = Pin(BLUE_LED, Pin.OUT)
+import odroidgo
+from machine import Pin
+
+blue_led = Pin(odroidgo.LED_BLUE, Pin.OUT)
