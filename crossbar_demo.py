@@ -1,33 +1,37 @@
-import time
+"""
+    Odroid Go crossbar test
+"""
 
 from odroidgo.crossbar import Crossbar
 
 
-class CrossbarHandler:
-    def __init__(self, print_func):
-        self.print_func = print_func
+class CrossbarPrintHandler:
+    def __init__(self, screen):
+        self.screen = screen
 
     def up(self):
-        self.print_func("up")
+        self.screen.print("up")
 
     def down(self):
-        self.print_func("down")
+        self.screen.print("down")
 
     def right(self):
-        self.print_func("right")
+        self.screen.print("right")
 
     def left(self):
-        self.print_func("left")
+        self.screen.print("left")
 
 
-def main(lcd, print_func):
-    crossbar_handler = CrossbarHandler(print_func)
+def main(screen):
+    crossbar_handler = CrossbarPrintHandler(screen)
     crossbar = Crossbar(crossbar_handler)
-
-    print_func("poll loop started...")
-
-    for i in range(100):
+    screen.print("poll loop started...")
+    while True:
         crossbar.poll()
-        time.sleep(0.1)
 
-    print_func("--END--")
+
+if __name__ == "builtins":
+    from odroidgo.screen import OdroidGoDisplay
+
+    screen = OdroidGoDisplay()
+    main(screen)

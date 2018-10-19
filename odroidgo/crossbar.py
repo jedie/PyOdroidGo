@@ -6,35 +6,16 @@
     joy-x button adc values: left 2500 - right 1200
     joy-y button adc values: up 2500 - down 1200
 """
-import sys
-import time
 
-import machine
 import odroidgo
-from machine import ADC, Pin, Timer
 
 
 class JoystickHandler:
-    def __init__(self, pin_no, high_callback, low_callback):
-        # set PULL_UP will raise into:
-        # ValueError: pins 34~39 do not have pull-up or pull-down circuitry
-        pin = Pin(pin_no, mode=Pin.IN)  # , pull=Pin.PULL_UP)
+    def __init__(self, adc, high_callback, low_callback):
+        self.adc = adc  # machine.ADC instance
 
         self.high_callback = high_callback
         self.low_callback = low_callback
-
-        try:
-            self.adc = ADC(pin)
-        except OSError as err:
-            # e.g.: ValueError: pin already used for adc
-            sys.print_exception(err)
-            for i in range(3, 0, -1):
-                print("Hard reset in %i Sek!" % i)
-                time.sleep(1)
-            machine.reset()
-
-        self.adc.width(ADC.WIDTH_9BIT)
-        self.adc.atten(ADC.ATTN_11DB)
 
         self.blocked = False
 
@@ -64,8 +45,8 @@ class Crossbar:
     """
 
     def __init__(self, handler):
-        self.joy_x = JoystickHandler(odroidgo.BUTTON_JOY_X, high_callback=handler.left, low_callback=handler.right)
-        self.joy_y = JoystickHandler(odroidgo.BUTTON_JOY_Y, high_callback=handler.up, low_callback=handler.down)
+        self.joy_x = JoystickHandler(odroidgo.button_joy_x_adc, high_callback=handler.left, low_callback=handler.right)
+        self.joy_y = JoystickHandler(odroidgo.button_joy_y_adc, high_callback=handler.up, low_callback=handler.down)
 
     def poll(self):
         self.joy_x.poll()
