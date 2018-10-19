@@ -5,16 +5,19 @@ import time
 
 import machine
 import odroidgo
-from machine import Pin
 from odroidgo import buttons
 from odroidgo.crossbar import Crossbar
+from odroidgo.led import blue_led
 from odroidgo.screen import OdroidGoDisplay
 
 SKIP_NAMES = ("boot", "main", "menu")
 
+led_pwm = machine.PWM(blue_led, freq=1000, duty=0)
+led_pwm.duty(100)
+
 
 class Menu:
-    WAIT_TIME = 3
+    WAIT_TIME = 1
     DEFAULT_DELETE_COUNT = 3
 
     def __init__(self, screen, reset_pin):
@@ -30,10 +33,11 @@ class Menu:
 
         reset_handler = buttons.Button(pin_no=reset_pin, callback=self.reset_callback)
 
-        self.exit=False
+        self.exit = False
 
         self.print_module_name()
         self.next_call = time.time() + self.WAIT_TIME
+        led_pwm.duty(0)
 
     def get_module_names(self):
         # http://docs.micropython.org/en/latest/library/uos.html#uos.ilistdir
@@ -59,14 +63,17 @@ class Menu:
         self.screen.print("%i - %r" % (self.pos, self.get_module_name()))
 
     def up(self):
+        led_pwm.duty(100)
         # go one filename up
         if self.pos <= 0:
             self.pos = self.max
         else:
             self.pos -= 1
         self.print_module_name()
+        led_pwm.duty(0)
 
     def down(self):
+        led_pwm.duty(100)
         # go one filename down
         if self.pos >= self.max:
             self.screen.reset()
@@ -74,6 +81,7 @@ class Menu:
         else:
             self.pos += 1
         self.print_module_name()
+        led_pwm.duty(0)
 
     def right(self):
         # start current filename
@@ -92,6 +100,7 @@ class Menu:
         module_name = self.get_module_name()
         self.screen.print("import %r..." % module_name)
         try:
+            led_pwm.duty(50)
             module = __import__(module_name)
             self.screen.print("Start main()...")
             module.main(self.screen)
@@ -111,6 +120,8 @@ class Menu:
             del (module)
             del (sys.modules[module_name])
 
+        led_pwm.duty(0)
+
         # try to 'reset' everything
         self.screen.set_default_font()
         self.screen.print("%r done" % module_name)
@@ -120,7 +131,7 @@ class Menu:
         self.print_module_name()
 
     def reset_callback(self, pin):
-        print("Reset!")
+        led_pwm.duty(50)
         try:
             self.screen.reset()
             self.screen.echo("Reset!")
@@ -161,6 +172,7 @@ screen.set_default_font()
 try:
     menu = Menu(screen=screen, reset_pin=odroidgo.BUTTON_MENU)
     crossbar = Crossbar(handler=menu)
+
     while not menu.exit:
         crossbar.poll()
         time.sleep(0.1)
@@ -174,5 +186,5 @@ except Exception as err:
         screen.print(line)
 finally:
     screen.deinit()
-    
+
 print("--END--")
