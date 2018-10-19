@@ -4,13 +4,14 @@
     
     Based on code from https://github.com/pypyjs/pypyjs-examples/
 """
-
+import sys
 import time
 
+import display
 import machine
 import micropython
+from machine import SPI
 from micropython import const
-from odroidgo.screen import OdroidGoDisplay
 
 micropython.opt_level(99)
 
@@ -55,7 +56,9 @@ def interlace_generator(limit):
             pos = size
 
 
-def render_mandelbrot_line(screen, width, height, y, size, left, right, top, bottom, iterations):
+def render_mandelbrot_line(tft, width, height, y, size, left, right, top, bottom, iterations):
+    color_factor = int(0xffffff / iterations)
+
     for x in range(width):
         z = complex(0, 0)
         c = complex(left + x * (right - left) / width, top + y * (bottom - top) / height)
@@ -67,59 +70,47 @@ def render_mandelbrot_line(screen, width, height, y, size, left, right, top, bot
             else:
                 break
 
-        if count <= 4:
-            color = screen.DARKGREY
-        elif count <= 8:
-            color = screen.GREEN
-        elif count <= 10:
-            color = screen.BLUE
-        elif count <= 12:
-            color = screen.RED
-        elif count <= 15:
-            color = screen.YELLOW
-        else:
-            color = screen.BLACK
+        color = int(count * color_factor)
 
         if size > 1:
             # https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/display#tftlinex-y-x1-y1-color
-            screen.line(x, y, x, y + size, color)
+            tft.line(x, y, x, y + size, color)
         else:
             # https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/display#tftpixelx-y-color
-            screen.pixel(x, y, color)
+            tft.pixel(x, y, color)
 
 
-def mandelbrot(screen, width, height, left, right, top, bottom, iterations):
+def mandelbrot(tft, width, height, left, right, top, bottom, iterations):
     for y, size in interlace_generator(height):
-        render_mandelbrot_line(screen, width, height, y, size, left, right, top, bottom, iterations)
+        render_mandelbrot_line(tft, width, height, y, size, left, right, top, bottom, iterations)
 
 
-def render():
-    screen = OdroidGoDisplay()
-    width, height = screen.screensize()
+def main(screen):
+    screen.reset()
 
     # https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/machine#machinewdtenable
     machine.WDT(False)
 
+    start_time = time.time()
     mandelbrot(
         screen,
-        width=width,
-        height=height,
+        width=screen.width,
+        height=screen.height,
         left=const(-2),
         right=0.5,
         top=const(1.25),
         bottom=const(-1.25),
         iterations=const(40),
     )
-
-
-try:
-    start_time = time.time()
-    render()
     duration = time.time() - start_time
     print("rendered in %.1f sec." % duration)
-finally:
-    # FIXME:
-    # import gc
-    # gc.collect()
 
+
+if __name__ == "builtins":
+    from odroidgo.screen import OdroidGoDisplay
+
+    screen = OdroidGoDisplay()
+    main(screen)
+    screen.deinit()
+    del screen
     print("---END---")
