@@ -153,3 +153,4 @@ try:
 finally:
     screen.deinit()
     print("--END--")
+    machine.reset()
