@@ -63,6 +63,10 @@ class Display(display.TFT):
             
         self.text(align, self.text_next_y, text, color, transparent=transparent)
         self.text_next_y = self.text_y() + self.font_height
+        
+    def echo(self, text, **kwargs):
+        print(text)
+        self.print(text)
 
 
 class OdroidGoDisplay(Display):
