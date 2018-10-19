@@ -112,8 +112,12 @@ class Menu:
         self.print_module_name()
 
     def reset_callback(self, pin):
-        self.screen.reset()
-        self.screen.print("Reset!")
+        print("Reset!")
+        try:
+            self.screen.reset()
+            self.screen.print("Reset!")
+        except:
+            pass
         machine.reset()
 
     def left(self):
@@ -139,10 +143,12 @@ class Menu:
 
 screen = OdroidGoDisplay()
 screen.print("PyOdroidGo by Jens Diemer (GPLv3)")
+screen.set_font(screen.FONT_DefaultSmall)
 screen.print(
     "%s %s on %s (Python v%s)"
     % (sys.implementation.name, ".".join([str(i) for i in sys.implementation.version]), sys.platform, sys.version)
 )
+screen.set_default_font()
 
 try:
     menu = Menu(screen=screen, reset_pin=odroidgo.BUTTON_MENU)
@@ -150,7 +156,19 @@ try:
     while True:
         crossbar.poll()
         time.sleep(0.1)
+except Exception as err:
+    buffer = io.StringIO()
+    sys.print_exception(err, buffer)
+    content = buffer.getvalue()
+    print(content)
+    screen.set_default_font()
+    for line in content.splitlines():
+        screen.print(line)
+    print("--END--")
 finally:
     screen.deinit()
     print("--END--")
+    for i in range(5, 0, -1):
+        print("Hard reset in %i Sek!" % i)
+        time.sleep(1)
     machine.reset()
