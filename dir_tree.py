@@ -2,6 +2,8 @@ import io
 import os
 import sys
 
+from odroidgo.screen import screen
+
 TYPE_DIR = 0x4000
 TYPE_FILE = 0x8000
 
@@ -28,14 +30,11 @@ def dir_listing(screen, path="/"):
             screen.print(line)
 
 
-def main(screen):
-    #screen.set_font(screen.FONT_Small)
+def main():
+    # screen.set_font(screen.FONT_Small)
     screen.set_font(screen.FONT_DefaultSmall)
     dir_listing(screen)
 
 
-if __name__ == "builtins":
-    from odroidgo.screen import OdroidGoDisplay
-
-    screen = OdroidGoDisplay()
-    main(screen)
+if __name__ == "builtins":  # start with F5 from thonny editor ;)
+    main()

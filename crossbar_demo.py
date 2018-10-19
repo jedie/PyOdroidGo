@@ -3,35 +3,30 @@
 """
 
 from odroidgo.crossbar import Crossbar
+from odroidgo.screen import screen
 
 
 class CrossbarPrintHandler:
-    def __init__(self, screen):
-        self.screen = screen
-
     def up(self):
-        self.screen.print("up")
+        screen.print("up")
 
     def down(self):
-        self.screen.print("down")
+        screen.print("down")
 
     def right(self):
-        self.screen.print("right")
+        screen.print("right")
 
     def left(self):
-        self.screen.print("left")
+        screen.print("left")
 
 
-def main(screen):
-    crossbar_handler = CrossbarPrintHandler(screen)
+def main():
+    crossbar_handler = CrossbarPrintHandler()
     crossbar = Crossbar(crossbar_handler)
     screen.print("poll loop started...")
     while True:
         crossbar.poll()
 
 
-if __name__ == "builtins":
-    from odroidgo.screen import OdroidGoDisplay
-
-    screen = OdroidGoDisplay()
-    main(screen)
+if __name__ == "builtins":  # start with F5 from thonny editor ;)
+    main()

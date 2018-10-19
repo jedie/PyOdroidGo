@@ -8,6 +8,21 @@
 """
 
 import odroidgo
+from machine import ADC, Pin
+
+
+# set PULL_UP will raise into:
+# ValueError: pins 34~39 do not have pull-up or pull-down circuitry
+button_joy_x_pin = Pin(odroidgo.BUTTON_JOY_X, mode=Pin.IN)  # , pull=Pin.PULL_UP)
+button_joy_x_adc = ADC(button_joy_x_pin)
+button_joy_x_adc.width(ADC.WIDTH_9BIT)
+button_joy_x_adc.atten(ADC.ATTN_11DB)
+
+
+button_joy_y_pin = Pin(odroidgo.BUTTON_JOY_Y, mode=Pin.IN)  # , pull=Pin.PULL_UP)
+button_joy_y_adc = ADC(button_joy_y_pin)
+button_joy_y_adc.width(ADC.WIDTH_9BIT)
+button_joy_y_adc.atten(ADC.ATTN_11DB)
 
 
 class JoystickHandler:
@@ -45,8 +60,8 @@ class Crossbar:
     """
 
     def __init__(self, handler):
-        self.joy_x = JoystickHandler(odroidgo.button_joy_x_adc, high_callback=handler.left, low_callback=handler.right)
-        self.joy_y = JoystickHandler(odroidgo.button_joy_y_adc, high_callback=handler.up, low_callback=handler.down)
+        self.joy_x = JoystickHandler(button_joy_x_adc, high_callback=handler.left, low_callback=handler.right)
+        self.joy_y = JoystickHandler(button_joy_y_adc, high_callback=handler.up, low_callback=handler.down)
 
     def poll(self):
         self.joy_x.poll()

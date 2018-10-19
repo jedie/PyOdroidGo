@@ -103,3 +103,7 @@ class OdroidGoDisplay(Display):
             bgr=True,
             rot=self.LANDSCAPE_FLIP,
         )
+
+
+# Display instance for global usage:
+screen = OdroidGoDisplay()

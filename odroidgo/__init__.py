@@ -2,7 +2,7 @@
     ODROID GO constants
 """
 
-from machine import ADC, Pin
+
 from micropython import const
 
 TFT_MISO_PIN = const(19)
@@ -33,22 +33,5 @@ BUTTON_JOY_MIN_ADC_LOW = const(1200)
 
 LED_BLUE = const(2)
 
-BATTERY_PIN=const(36)
-BATTERY_RESISTANCE_NUM=const(2)
-
-
-#_____________________________________________________________________________
-# ODROID GO object instances
-
-
-# set PULL_UP will raise into:
-# ValueError: pins 34~39 do not have pull-up or pull-down circuitry
-button_joy_x_pin = Pin(BUTTON_JOY_X, mode=Pin.IN)  # , pull=Pin.PULL_UP)
-button_joy_x_adc = ADC(button_joy_x_pin)
-button_joy_x_adc.width(ADC.WIDTH_9BIT)
-button_joy_x_adc.atten(ADC.ATTN_11DB)
-
-button_joy_y_pin = Pin(BUTTON_JOY_Y, mode=Pin.IN)  # , pull=Pin.PULL_UP)
-button_joy_y_adc = ADC(button_joy_y_pin)
-button_joy_y_adc.width(ADC.WIDTH_9BIT)
-button_joy_y_adc.atten(ADC.ATTN_11DB)
+BATTERY_PIN = const(36)
+BATTERY_RESISTANCE_NUM = const(2)

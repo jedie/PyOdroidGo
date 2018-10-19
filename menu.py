@@ -8,7 +8,7 @@ import odroidgo
 from odroidgo import buttons
 from odroidgo.crossbar import Crossbar
 from odroidgo.led import blue_led
-from odroidgo.screen import OdroidGoDisplay
+from odroidgo.screen import screen
 
 SKIP_NAMES = ("boot", "main", "menu")
 
@@ -103,7 +103,7 @@ class Menu:
             led_pwm.duty(50)
             module = __import__(module_name)
             self.screen.print("Start main()...")
-            module.main(self.screen)
+            module.main()
         except SystemExit:
             self.screen.echo("exit menu")
             self.exit = True  # will exist the poll loop!
@@ -160,31 +160,35 @@ class Menu:
             self.print_module_name()
 
 
-screen = OdroidGoDisplay()
-screen.print("PyOdroidGo by Jens Diemer (GPLv3)")
-screen.set_font(screen.FONT_DefaultSmall)
-screen.print(
-    "%s %s on %s (Python v%s)"
-    % (sys.implementation.name, ".".join([str(i) for i in sys.implementation.version]), sys.platform, sys.version)
-)
-screen.set_default_font()
-
-try:
-    menu = Menu(screen=screen, reset_pin=odroidgo.BUTTON_MENU)
-    crossbar = Crossbar(handler=menu)
-
-    while not menu.exit:
-        crossbar.poll()
-        time.sleep(0.1)
-except Exception as err:
-    buffer = io.StringIO()
-    sys.print_exception(err, buffer)
-    content = buffer.getvalue()
-    print(content)
+def main():
+    screen.print("PyOdroidGo by Jens Diemer (GPLv3)")
+    screen.set_font(screen.FONT_DefaultSmall)
+    screen.print(
+        "%s %s on %s (Python v%s)"
+        % (sys.implementation.name, ".".join([str(i) for i in sys.implementation.version]), sys.platform, sys.version)
+    )
     screen.set_default_font()
-    for line in content.splitlines():
-        screen.print(line)
-finally:
-    screen.deinit()
 
-print("--END--")
+    try:
+        menu = Menu(screen=screen, reset_pin=odroidgo.BUTTON_MENU)
+        crossbar = Crossbar(handler=menu)
+
+        while not menu.exit:
+            crossbar.poll()
+            time.sleep(0.1)
+    except Exception as err:
+        buffer = io.StringIO()
+        sys.print_exception(err, buffer)
+        content = buffer.getvalue()
+        print(content)
+        screen.set_default_font()
+        for line in content.splitlines():
+            screen.print(line)
+    finally:
+        screen.deinit()
+
+    print("--END--")
+
+
+if __name__ == "builtins":  # start with F5 from thonny editor ;)
+    main()

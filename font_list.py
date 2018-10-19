@@ -1,4 +1,7 @@
-def main(screen):
+from odroidgo.screen import screen
+
+
+def main():
     screen.print("All existing fonts:", align=screen.CENTER, color=screen.CYAN)
 
     fonts = screen.get_fonts()
@@ -9,11 +12,5 @@ def main(screen):
         screen.print(text, transparent=True)
 
 
-if __name__ == "builtins":
-    from odroidgo.screen import OdroidGoDisplay
-
-    screen = OdroidGoDisplay()
-    main(screen)
-    screen.deinit()
-    del screen
-    print("---END---")
+if __name__ == "builtins":  # start with F5 from thonny editor ;)
+    main()

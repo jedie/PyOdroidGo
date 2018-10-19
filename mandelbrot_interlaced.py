@@ -12,6 +12,7 @@ import machine
 import micropython
 from machine import SPI
 from micropython import const
+from odroidgo.screen import screen
 
 micropython.opt_level(99)
 
@@ -85,7 +86,7 @@ def mandelbrot(tft, width, height, left, right, top, bottom, iterations):
         render_mandelbrot_line(tft, width, height, y, size, left, right, top, bottom, iterations)
 
 
-def main(screen):
+def main():
     screen.reset()
 
     # https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/machine#machinewdtenable
@@ -106,11 +107,5 @@ def main(screen):
     print("rendered in %.1f sec." % duration)
 
 
-if __name__ == "builtins":
-    from odroidgo.screen import OdroidGoDisplay
-
-    screen = OdroidGoDisplay()
-    main(screen)
-    screen.deinit()
-    del screen
-    print("---END---")
+if __name__ == "builtins":  # start with F5 from thonny editor ;)
+    main()

@@ -1,28 +1,40 @@
 
 import io
-import os
-from odroidgo import fonts
+import uos
 import micropython
 
 
-class LcdOut(io.IOBase):
-    def __init__(self, lcd):
-        self.lcd = lcd
+class ScreenOut:
+    def __init__(self, screen):
+        self.screen = screen
 
     def readinto(self):
         return None
     
     def write(self, array):
         txt = bytes(array).decode("UTF-8")
-        self.lcd.write(txt)
+        self.screen.print(txt)
 
 
-def main(lcd, print_func):   
-    lcd_out = LcdOut(lcd)
-    lcd.set_font(fonts.glcdfont)
-    try:
-        # https://docs.micropython.org/en/latest/library/uos.html#uos.dupterm
-        os.dupterm(lcd_out)
-        micropython.mem_info(False)
-    finally:
-        os.dupterm(None)
+def main(screen, path="/"):
+    screen.print("Memory info")
+    print = screen.print
+    x = micropython.mem_info(False)
+    print("XXX%r" % x)
+    
+#    screen_out = ScreenOut(screen)
+#    try:
+#        # https://docs.micropython.org/en/latest/library/uos.html#uos.dupterm
+#        uos.dupterm(screen_out)
+#        micropython.mem_info(False)
+#    finally:
+#        uos.dupterm(None)
+
+
+print(__name__)
+
+if __name__ == "builtins":
+    from odroidgo.screen import OdroidGoDisplay
+
+    screen = OdroidGoDisplay()
+    main(screen)

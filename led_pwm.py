@@ -2,9 +2,10 @@ import time
 
 from machine import PWM, Pin
 from odroidgo.led import blue_led
+from odroidgo.screen import screen
 
 
-def main(screen):
+def main():
     led_pwm = PWM(blue_led, freq=1000, duty=0)
 
     for i in range(3, 0, -1):
@@ -21,11 +22,5 @@ def main(screen):
     led_pwm.deinit()
 
 
-if __name__ == "builtins":
-    from odroidgo.screen import OdroidGoDisplay
-
-    screen = OdroidGoDisplay()
-    main(screen)
-    screen.deinit()
-    del screen
-    print("---END---")
+if __name__ == "builtins":  # start with F5 from thonny editor ;)
+    main()
