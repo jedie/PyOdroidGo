@@ -18,12 +18,7 @@ class Menu:
     DEFAULT_DELETE_COUNT = 3
 
     def __init__(self, screen, reset_pin):
-        if screen is not None:
-            self.screen = screen
-            self.print = screen.print
-        else:
-            self.screen = None
-            self.print = print
+        self.screen = screen
 
         self.next_call = time.time() + self.WAIT_TIME
         self.pos = 0
@@ -55,7 +50,7 @@ class Menu:
         return self.module_names[self.pos]
 
     def print_module_name(self):
-        self.print("%i - %r" % (self.pos, self.get_module_name()))
+        self.screen.print("%i - %r" % (self.pos, self.get_module_name()))
 
     def up(self):
         # go one filename up
@@ -85,60 +80,54 @@ class Menu:
             return
         self.running = True
 
-        if self.screen:
-            screen.reset()
+        screen.reset()
 
         module_name = self.get_module_name()
-        self.print("import %r..." % module_name)
-        module = __import__(module_name)
-        self.print("Start main()...")
+        self.screen.print("import %r..." % module_name)
         try:
-            module.main(self.screen, self.print)
+            module = __import__(module_name)
+            self.screen.print("Start main()...")
+            module.main(self.screen)
         except Exception as err:
             buffer = io.StringIO()
             sys.print_exception(err, buffer)
             content = buffer.getvalue()
             print(content)
-            if screen:
-                screen.set_default_font()
+            self.screen.set_default_font()
             for line in content.splitlines():
-                self.print(line)
+                self.screen.print(line)
         finally:
             # try to 'reset' everything
-            self.print("%r done" % module_name)
+            self.screen.set_default_font()
+            self.screen.print("%r done" % module_name)
             del (module)
             del (sys.modules[module_name])
 
-        if screen:
-            screen.set_default_font()
         self.running = False
         self.next_call = time.time() + self.WAIT_TIME
         self.print_module_name()
 
     def reset_callback(self, pin):
-        if self.screen:
-            screen.fill(0xff0000)
-            screen.reset_scroll()
-            screen.set_pos(0, 0)
-        self.print("Reset!")
+        self.screen.reset()
+        self.screen.print("Reset!")
         machine.reset()
 
     def left(self):
         # delete current file
         module_name = self.get_module_name()
         if self.delete_pressed >= 1:
-            self.print("Delete %r ? Press again %i times." % (module_name, self.delete_pressed))
+            self.screen.print("Delete %r ? Press again %i times." % (module_name, self.delete_pressed))
             self.delete_pressed -= 1
             return
 
         self.delete_pressed = self.DEFAULT_DELETE_COUNT
-        self.print("delete %r" % module_name)
+        self.screen.print("delete %r" % module_name)
         try:
             os.remove("%s.py" % module_name)
         except Exception as err:
-            self.print("ERROR: %s" % err)
+            self.screen.print("ERROR: %s" % err)
         else:
-            self.print("Deleted, ok")
+            self.screen.print("Deleted, ok")
             del self.module_names[self.module_names.index(module_name)]
             self.max -= 1
             self.print_module_name()
