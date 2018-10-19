@@ -96,9 +96,8 @@ class Menu:
             self.screen.print("Start main()...")
             module.main(self.screen)
         except SystemExit:
-            print("exit menu")
-            self.screen.print("exit menu")
-            self.exit=True # will exist the poll loop!
+            self.screen.echo("exit menu")
+            self.exit = True  # will exist the poll loop!
             return
         except Exception as err:
             buffer = io.StringIO()
@@ -124,9 +123,9 @@ class Menu:
         print("Reset!")
         try:
             self.screen.reset()
-            self.screen.print("Reset!")
+            self.screen.echo("Reset!")
         except:
-            pass
+            print("Reset!")
         machine.reset()
 
     def left(self):
