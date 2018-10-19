@@ -7,3 +7,5 @@ def main(screen):
 
     voltage = battery.get_voltage()
     screen.print("voltage: %sV" % voltage)
+
+    battery.deinit()
