@@ -30,6 +30,8 @@ class Menu:
 
         reset_handler = buttons.Button(pin_no=reset_pin, callback=self.reset_callback)
 
+        self.exit=False
+
         self.print_module_name()
         self.next_call = time.time() + self.WAIT_TIME
 
@@ -93,6 +95,11 @@ class Menu:
             module = __import__(module_name)
             self.screen.print("Start main()...")
             module.main(self.screen)
+        except SystemExit:
+            print("exit menu")
+            self.screen.print("exit menu")
+            self.exit=True # will exist the poll loop!
+            return
         except Exception as err:
             buffer = io.StringIO()
             sys.print_exception(err, buffer)
@@ -101,12 +108,13 @@ class Menu:
             self.screen.set_default_font()
             for line in content.splitlines():
                 self.screen.print(line)
-        finally:
-            # try to 'reset' everything
-            self.screen.set_default_font()
-            self.screen.print("%r done" % module_name)
+        else:
             del (module)
             del (sys.modules[module_name])
+
+        # try to 'reset' everything
+        self.screen.set_default_font()
+        self.screen.print("%r done" % module_name)
 
         self.running = False
         self.next_call = time.time() + self.WAIT_TIME
@@ -154,7 +162,7 @@ screen.set_default_font()
 try:
     menu = Menu(screen=screen, reset_pin=odroidgo.BUTTON_MENU)
     crossbar = Crossbar(handler=menu)
-    while True:
+    while not menu.exit:
         crossbar.poll()
         time.sleep(0.1)
 except Exception as err:
@@ -165,11 +173,7 @@ except Exception as err:
     screen.set_default_font()
     for line in content.splitlines():
         screen.print(line)
-    print("--END--")
 finally:
     screen.deinit()
-    print("--END--")
-    for i in range(5, 0, -1):
-        print("Hard reset in %i Sek!" % i)
-        time.sleep(1)
-    machine.reset()
+    
+print("--END--")
