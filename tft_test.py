@@ -1,15 +1,19 @@
-import time
+def main(screen):
+    screen.print("All existing fonts:", align=screen.CENTER, color=screen.CYAN)
 
-from odroidgo.fonts import glcdfont, tt14, tt24, tt32
-from odroidgo.lcd import get_ili9341_lcd
+    fonts = screen.get_fonts()
+    for font_name, font_id in fonts:
+        text = "%i - %s" % (font_id, font_name)
+        print(text)
+        screen.set_font(font_id)
+        screen.print(text, transparent=True)
 
-FONTS = (glcdfont, tt14, tt24, tt32)
 
-def main(lcd, print_func):
-    if lcd is None:
-        lcd = get_ili9341_lcd(fill=0x5500ff)
-        lcd.print("Hello World!")
-        
-    for font in FONTS:
-        lcd.set_font(font)
-        lcd.print("%s %s" % (font.__name__, time.time()))
+if __name__ == "builtins":
+    from odroidgo.screen import OdroidGoDisplay
+
+    screen = OdroidGoDisplay()
+    main(screen)
+    screen.deinit()
+    del screen
+    print("---END---")
