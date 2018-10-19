@@ -40,6 +40,7 @@ class Display(display.TFT):
         self.clear(self.BLACK)
         self.set_default_font()
         self.text(0, 0, "", self.BLACK)
+        self.text_next_y=0
 
     def set_default_font(self):
         self.set_font(self.FONT_Default)
@@ -57,10 +58,11 @@ class Display(display.TFT):
         if color is None:
             color = self.WHITE
 
-        y = self.text_y() + self.font_height
-        if y >= self.height:
-            y = 0
-        self.text(align, y, text, color, transparent=transparent)
+        if self.text_next_y >= self.height:
+            self.text_next_y = 0
+            
+        self.text(align, self.text_next_y, text, color, transparent=transparent)
+        self.text_next_y = self.text_y() + self.font_height
 
 
 class OdroidGoDisplay(Display):
