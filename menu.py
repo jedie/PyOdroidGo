@@ -67,6 +67,7 @@ class Menu:
     def down(self):
         # go one filename down
         if self.pos >= self.max:
+            self.screen.reset()
             self.pos = 0
         else:
             self.pos += 1
