@@ -2,8 +2,8 @@
 from odroidgo.battery import OdroidGoBattery
 
 
-def main(lcd, print_func):
+def main(screen):
     battery = OdroidGoBattery()
 
     voltage = battery.get_voltage()
-    print_func("voltage: %sV" % voltage)
+    screen.print("voltage: %sV" % voltage)
