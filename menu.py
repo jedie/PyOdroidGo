@@ -39,7 +39,11 @@ class Menu:
         files = [item[0] for item in os.ilistdir(".") if item[1] == 0x8000]
         # print("Files: %r" % files)
 
-        module_names = [filename.rsplit(".", 1)[0] for filename in files if not filename.startswith("_")]
+        module_names = [
+            filename.rsplit(".", 1)[0]
+            for filename in files
+            if filename.endswith(".py") and not filename.startswith("_")
+        ]
         module_names = [module_name for module_name in module_names if not module_name in SKIP_NAMES]
         module_names.sort()
         for no, module_name in enumerate(module_names):
